@@ -23,6 +23,7 @@ checking to produce the final outputs.
 import copy
 import functools
 import logging as stdlogging
+from typing import Iterator, Tuple
 
 from absl import app
 from absl import flags
@@ -198,7 +199,9 @@ def conformer_to_stat_values(conformer):
   yield 'num_initial_geometries', len(conformer.initial_geometries)
   yield 'num_duplicates', len(conformer.duplicate_of)
 
+from apache_beam.typehints.decorators import with_output_types
 
+#@with_output_types(Iterator[Tuple[int, dataset_pb2.BondTopologySummary().__class__]])
 def bond_topology_summaries_from_csv(filename):
   """Beam DoFn for generating bare BondTopologySummary.
 
@@ -623,6 +626,34 @@ def pipeline(root):
   Args:
     root: the root of the pipeline.
   """
+  # SMURF: testing code
+#  import apache_beam.coders as coders
+#  coders.registry.register_coder(dataset_pb2.BondTopologySummary().__class__,
+#                                 coders.ProtoCoder)
+#  coders.registry.register_coder(Tuple[int, dataset_pb2.BondTopologySummary],
+#                                 coders.TupleCoder)
+#  print('SMURF: registered coders')
+#  for k, v in coders.registry._coders.items():
+#    print(k, v)
+
+#  field_names = ['count_attempted_conformers', 'count_duplicates_same_topology']
+#  bare_bt_summaries = (
+#      root
+#      | 'BondTopologyInput' >> beam.Create([FLAGS.input_bond_topology_csv])
+#      | 'GenerateBareBTSummaries' >>
+#      beam.FlatMap(bond_topology_summaries_from_csv))
+#            | 'DropBTID' >> beam.Values()
+#            | 'CSVFormat' >> beam.Map(
+#                csv_format_bond_topology_summary, field_names=field_names)
+#            | 'WriteCSV' >> beam.io.WriteToText(
+#                FLAGS.output_stem + '_bt_summary',
+#                header='bt_id,' + ','.join(field_names),
+#                num_shards=1,
+#                file_name_suffix='.csv'))
+
+ # return
+
+
   stage1_matched_conformers = dat_input_and_parsing_pipeline(root, 'stage1')
   stage2_matched_conformers = dat_input_and_parsing_pipeline(root, 'stage2')
 

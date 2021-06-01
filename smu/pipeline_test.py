@@ -89,8 +89,13 @@ class IntegrationTest(absltest.TestCase):
         output_stem=output_stem,
         output_shards=1):
       # If you have custom beam options, add them here.
-      beam_options = None
-      with beam.Pipeline(beam_options) as root:
+      #SMURF
+      from apache_beam.options.pipeline_options import DirectOptions
+      beam_options = DirectOptions(
+        runner='DirectRunner',
+        direct_running_mode='multi_processing',
+      )
+      with beam.Pipeline(options=beam_options) as root:
         pipeline.pipeline(root)
 
     logging.info('Files in output: %s',
